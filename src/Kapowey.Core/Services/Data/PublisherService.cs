@@ -32,7 +32,7 @@ namespace Kapowey.Core.Services.Data
 
         private IImageService ImageService { get; }
 
-        private ISystemClock SystemClock { get; }
+        private IClockProvider SystemClock { get; }
 
         private IKapoweyHttpContext KapoweyHttpContext { get; }
 
@@ -42,7 +42,7 @@ namespace Kapowey.Core.Services.Data
             IAppCache cacheManager,
             KapoweyContext dbContext,
             IPublisherCategoryService publisherCategoryService,
-            ISystemClock systemClock,
+            IClockProvider systemClock,
             IImageService imageService,
             IKapoweyHttpContext kapoweyHttpContext)
              : base(appSettings, cacheManager, dbContext)

@@ -9,7 +9,7 @@ namespace Kapowey.Core.Services
 {
     public class KapoweyHttpContext : IKapoweyHttpContext
     {
-        private ISystemClock Clock { get; }
+        private IClockProvider Clock { get; }
 
         public string BaseUrl { get; set; }
 
@@ -26,7 +26,7 @@ namespace Kapowey.Core.Services
         public KapoweyHttpContext(
             AppConfigurationSettings appSettings,
             IUrlHelper urlHelper,
-            ISystemClock clock)
+            IClockProvider clock)
         {
             var scheme = urlHelper.ActionContext.HttpContext.Request.Scheme;
             if (appSettings.BehindSSLProxy)

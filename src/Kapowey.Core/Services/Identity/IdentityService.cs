@@ -28,14 +28,12 @@ public class IdentityService : IIdentityService
     private readonly IUserClaimsPrincipalFactory<User> _userClaimsPrincipalFactory;
     private readonly IAuthorizationService _authorizationService;
     private readonly IAppCache _cache;
-    private readonly IStringLocalizer<IdentityService> _localizer;
     private TimeSpan RefreshInterval => TimeSpan.FromSeconds(60);
     private LazyCacheEntryOptions Options => new LazyCacheEntryOptions().SetAbsoluteExpiration(RefreshInterval, ExpirationMode.LazyExpiration);
     public IdentityService(
         IServiceScopeFactory scopeFactory,
         AppConfigurationSettings appConfig,
-        IAppCache cache,
-        IStringLocalizer<IdentityService> localizer)
+        IAppCache cache)
     {
         var scope = scopeFactory.CreateScope();
         _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
@@ -44,7 +42,6 @@ public class IdentityService : IIdentityService
         _authorizationService = scope.ServiceProvider.GetRequiredService<IAuthorizationService>();
         _appConfig = appConfig;
         _cache = cache;
-        _localizer = localizer;
     }
 
     public async Task<string?> GetUserNameAsync(int userId, CancellationToken cancellation = default)
@@ -61,13 +58,13 @@ public class IdentityService : IIdentityService
     }
     public async Task<bool> IsInRoleAsync(int userId, string role, CancellationToken cancellation = default)
     {
-        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellation) ?? throw new NotFoundException(_localizer["User Not Found."]);
+        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellation) ?? throw new NotFoundException("User Not Found.");
         return await _userManager.IsInRoleAsync(user, role);
     }
 
     public async Task<bool> AuthorizeAsync(int userId, string policyName, CancellationToken cancellation = default)
     {
-        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellation) ?? throw new NotFoundException(_localizer["User Not Found."]);
+        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellation) ?? throw new NotFoundException("User Not Found.");
         var principal = await _userClaimsPrincipalFactory.CreateAsync(user);
         var result = await _authorizationService.AuthorizeAsync(principal, policyName);
         return result.Succeeded;
@@ -76,7 +73,7 @@ public class IdentityService : IIdentityService
 
     public async Task<Result> DeleteUserAsync(int userId, CancellationToken cancellation = default)
     {
-        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellation) ?? throw new NotFoundException(_localizer["User Not Found."]);
+        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == userId, cancellation) ?? throw new NotFoundException("User Not Found.");
         var result = await _userManager.DeleteAsync(user);
         return result.ToApplicationResult();
     }
@@ -94,20 +91,20 @@ public class IdentityService : IIdentityService
         var user = await _userManager.FindByNameAsync(request.UserName!);
         if (user == null)
         {
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["User Not Found."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "User Not Found." });
         }
         if (!user.IsActive)
         {
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["User Not Active. Please contact the administrator."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "User Not Active. Please contact the administrator." });
         }
         if (!(user.EmailConfirmed ?? false))
         {
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["E-Mail not confirmed."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "E-Mail not confirmed." });
         }
         var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password!);
         if (!passwordValid)
         {
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["Invalid Credentials."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "Invalid Credentials." });
         }
         user.RefreshToken = GenerateRefreshToken();
         var tokenExpiryTime = DateTime.Now.AddDays(7);
@@ -128,15 +125,15 @@ public class IdentityService : IIdentityService
     {
         if (request is null)
         {
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["Invalid Client Token."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "Invalid Client Token." });
         }
         var userPrincipal = GetPrincipalFromExpiredToken(request.Token);
         var userEmail = userPrincipal.FindFirstValue(ClaimTypes.Email)!;
         var user = await _userManager.FindByEmailAsync(userEmail);
         if (user == null)
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["User Not Found."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "User Not Found." });
         if (user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-            return await Result<TokenResponse>.FailureAsync(new string[] { _localizer["Invalid Client Token."] });
+            return await Result<TokenResponse>.FailureAsync(new string[] { "Invalid Client Token." });
         var principal = await _userClaimsPrincipalFactory.CreateAsync(user);
         var token = GenerateEncryptedToken(GetSigningCredentials(), principal.Claims);
         user.RefreshToken = GenerateRefreshToken();
@@ -205,7 +202,7 @@ public class IdentityService : IIdentityService
         if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
             StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new SecurityTokenException(_localizer["Invalid token"]);
+            throw new SecurityTokenException("Invalid token");
         }
         return principal;
     }

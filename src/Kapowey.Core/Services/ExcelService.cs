@@ -8,11 +8,8 @@ namespace Kapowey.Core.Services;
 
 public class ExcelService : IExcelService
 {
-    private readonly IStringLocalizer<ExcelService> _localizer;
-
-    public ExcelService(IStringLocalizer<ExcelService> localizer)
+    public ExcelService()
     {
-        _localizer = localizer;
     }
 
     public async Task<byte[]> CreateTemplateAsync(IEnumerable<string> fields, string sheetName = "Sheet1")
@@ -106,7 +103,7 @@ public class ExcelService : IExcelService
         {
             if (!workbook.Worksheets.Contains(sheetName))
             {
-                return await Result<IEnumerable<TEntity>>.FailureAsync(new string[] { string.Format(_localizer["Sheet with name {0} does not exist!"], sheetName) });
+                return await Result<IEnumerable<TEntity>>.FailureAsync(new string[] { string.Format("Sheet with name {0} does not exist!", sheetName) });
             }
             var ws = workbook.Worksheet(sheetName);
             var dt = new DataTable();
@@ -123,7 +120,7 @@ public class ExcelService : IExcelService
             {
                 if (!dt.Columns.Contains(header))
                 {
-                    errors.Add(string.Format(_localizer["Header '{0}' does not exist in table!"], header));
+                    errors.Add(string.Format("Header '{0}' does not exist in table!", header));
                 }
             }
             if (errors.Any())
@@ -154,7 +151,7 @@ public class ExcelService : IExcelService
                 }
                 catch (Exception e)
                 {
-                    return await Result<IEnumerable<TEntity>>.FailureAsync(new string[] { string.Format(_localizer["Sheet name {0}:{1}"], sheetName, e.Message) });
+                    return await Result<IEnumerable<TEntity>>.FailureAsync(new string[] { string.Format("Sheet name {0}:{1}", sheetName, e.Message) });
                 }
             }
 

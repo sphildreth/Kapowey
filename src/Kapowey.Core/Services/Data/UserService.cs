@@ -44,7 +44,6 @@ namespace Kapowey.Core.Services.Data
         private IKapoweyHttpContext HttpContext { get; }
         public IMailService MailService { get; }
         
-        public IStringLocalizer<UserService> StringLocalizer { get; }
         public UserManager<User> UserManager { get; }
 
         public UserService(
@@ -57,7 +56,6 @@ namespace Kapowey.Core.Services.Data
             IImageService imageService,
             IKapoweyHttpContext httpContext,
             IMailService mailService,
-            IStringLocalizer<UserService> stringLocalizer,
             UserManager<User> userManager)
              : base(appSettings, cacheManager, dbContext)
         {
@@ -67,7 +65,6 @@ namespace Kapowey.Core.Services.Data
             ImageService = imageService;
             HttpContext = httpContext;
             MailService = mailService;
-            StringLocalizer = stringLocalizer;
             UserManager = userManager;
         }
 
@@ -382,7 +379,7 @@ namespace Kapowey.Core.Services.Data
                 return new ServiceResponse<bool>(new ServiceResponseMessage($"Invalid Email [{ email }]", ServiceResponseMessageType.NotFound));
             }
             var token = await UserManager.GeneratePasswordResetTokenAsync(data);
-            var subject = StringLocalizer["Verify your recovery email"];
+            var subject = "Verify your recovery email";
             //var template = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "EmailTemplates" ,"_recoverypassword.txt");
             var sendResult = MailService.SendAsync(data.Email, subject, "_recoverypassword", new { AppName = "Kapowey", Email = data.Email, Token = token });            
             return new ServiceResponse<bool>(result, new ServiceResponseMessage(sendResult.IsCompletedSuccessfully ? ServiceResponseMessageType.Ok : ServiceResponseMessageType.Error));
@@ -452,7 +449,7 @@ namespace Kapowey.Core.Services.Data
                     }).ConfigureAwait(false);
                     await DbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
-                var subject =StringLocalizer["Welcome to Kapowey!"];
+                var subject = "Welcome to Kapowey!";
                 var template = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "EmailTemplates" ,"_welcome.txt");
                 var sendResult = MailService.SendAsync(newUser.Email, subject, "_welcome", new { AppName = "Kapowey", Email = newUser.Email, UserName = newUser.UserName });
                 return new ServiceResponse<int>(newUser.Id, new ServiceResponseMessage(sendResult.IsCompletedSuccessfully ? ServiceResponseMessageType.Ok : ServiceResponseMessageType.Error));
