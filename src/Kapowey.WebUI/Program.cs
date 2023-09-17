@@ -14,6 +14,7 @@ using Serilog;
 using System.Diagnostics;
 using Kapowey.Core.Common.Models;
 using Kapowey.Core.Services.Data;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Extensions;
 using ScottBrady91.AspNetCore.Identity;
 
@@ -68,11 +69,18 @@ builder.Services.AddDbContext<KapoweyContext>(options =>
         .EnableSensitiveDataLogging());
 
 #region Security Related
+  //  builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
     builder.Services.AddIdentity<User, UserRole>()
         .AddRoles<UserRole>()
         .AddEntityFrameworkStores<KapoweyContext>()
         .AddDefaultTokenProviders();
     builder.Services.AddScoped<IPasswordHasher<User>, BCryptPasswordHasher<User>>();
+    builder.Services.AddAuthentication()
+        .AddGoogle(googleOptions =>
+        {
+            googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+            googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        });
     builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy(UserRoleRegistry.AdminRoleName, policy => policy.RequireRole(UserRoleRegistry.AdminRoleName));
