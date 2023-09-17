@@ -1,0 +1,1 @@
+﻿This folder contains API models used for business logic. See Kapowey.Entities for DAL/ORM EntityFramework models.

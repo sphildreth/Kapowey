@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kapowey", "src\Kapowey.WebUI\Kapowey.WebUI.csproj", "{C5CF40A1-91EF-4F66-A978-6F7E1756F60E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kapowey.Core", "src\Kapowey.Core\Kapowey.Core.csproj", "{B7F4ED9B-7E7F-4084-ADD7-D0F3E5CB7388}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kapowey.Tests", "tests\Kapowey.Tests\Kapowey.Tests.csproj", "{DCACCF5E-15E1-4D64-8D6C-ED13CDFD48EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5CF40A1-91EF-4F66-A978-6F7E1756F60E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5CF40A1-91EF-4F66-A978-6F7E1756F60E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5CF40A1-91EF-4F66-A978-6F7E1756F60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5CF40A1-91EF-4F66-A978-6F7E1756F60E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7F4ED9B-7E7F-4084-ADD7-D0F3E5CB7388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7F4ED9B-7E7F-4084-ADD7-D0F3E5CB7388}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCACCF5E-15E1-4D64-8D6C-ED13CDFD48EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCACCF5E-15E1-4D64-8D6C-ED13CDFD48EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCACCF5E-15E1-4D64-8D6C-ED13CDFD48EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCACCF5E-15E1-4D64-8D6C-ED13CDFD48EE}.Release|Any CPU.Build.0 = Release|Any CPU		
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86B05CE8-E80B-4E59-A352-05214B7CC5AD}
+	EndGlobalSection
+EndGlobal
