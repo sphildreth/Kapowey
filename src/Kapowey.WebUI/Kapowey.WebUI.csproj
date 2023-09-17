@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazor.Bootstrap" Version="1.10.2" />
+    <PackageReference Include="MudBlazor" Version="6.10.0" />
+    <PackageReference Include="MudBlazor.Extensions" Version="1.7.67" />
+    <PackageReference Include="MudBlazor.Markdown" Version="0.1.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kapowey.Core\Kapowey.Core.csproj" />
   </ItemGroup>
+
 
 </Project>

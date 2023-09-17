@@ -2,48 +2,32 @@
 
 <PageTitle>Kapowey</PageTitle>
 
-<div class="bb-page">
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-    <Sidebar @ref="sidebar"
-             ImageSrc="/images/logo/logo-white.svg"
-             Title="Blazor Bootstrap"
-             DataProvider="SidebarDataProvider" />
-
-    <main>
-        <div class="bb-top-row px-4 d-flex justify-content-end">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            <div class="py-2">
-                @Body
-            </div>
-        </article>
-    </main>
-
-</div>
+<MudLayout>
+    <MudAppBar>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_drawerOpen">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Kapowey</MudText>
+        </MudDrawerHeader>        
+        <NavMenu/>
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-2 pt-2">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
 @code {
-    private Sidebar sidebar = default!;
-    private IEnumerable<NavItem> navItems = default!;
+    bool _drawerOpen = true;
 
-    private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
+    void DrawerToggle()
     {
-        if (navItems is null)
-            navItems = GetNavItems();
-
-        return await Task.FromResult(request.ApplyTo(navItems));
-    }
-
-    private IEnumerable<NavItem> GetNavItems()
-    {
-        navItems = new List<NavItem>
-        {
-            new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
-            new NavItem { Id = "2", Href = "/counter", IconName = IconName.PlusSquareFill, Text = "Counter"},
-            new NavItem { Id = "3", Href = "/fetchdata", IconName = IconName.Table, Text = "Fetch Data"},
-        };
-
-        return navItems;
+        _drawerOpen = !_drawerOpen;
     }
 }
