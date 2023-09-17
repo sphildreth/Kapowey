@@ -10,6 +10,11 @@
     <PackageReference Include="MudBlazor" Version="6.10.0" />
     <PackageReference Include="MudBlazor.Extensions" Version="1.7.67" />
     <PackageReference Include="MudBlazor.Markdown" Version="0.1.2" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
