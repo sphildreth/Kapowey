@@ -59,9 +59,12 @@ namespace Kapowey.Core.Entities
             Status = Enums.Status.New;
         }
 
+        [Column("user_id")]
+        public override int Id { get; set; }
+
         [NotMapped]
         public int UserId => Id;
-        
+
         [NotMapped]
         public string? DisplayName { get; set; }
         
@@ -103,7 +106,7 @@ namespace Kapowey.Core.Entities
         public new bool? EmailConfirmed { get; set; }
 
         [Column("password_hash")]
-        public override string PasswordHash { get; set; }
+        public override string? PasswordHash { get; set; }
 
         [Column("security_stamp")]
         public override string SecurityStamp { get; set; }
@@ -274,7 +277,7 @@ namespace Kapowey.Core.Entities
         [InverseProperty(nameof(Series.ReviewedUser))]
         public virtual ICollection<Series> SeriesReviewedUser { get; set; }
 
-        public virtual ICollection<IdentityUserClaim<int>> Claims { get; set; }
+        public virtual ICollection<UserClaim> Claims { get; set; }
 
         [InverseProperty("User")]
         public virtual ICollection<UserLogin> UserLogin { get; set; }
@@ -300,7 +303,7 @@ namespace Kapowey.Core.Entities
 
         [NotMapped]
         public IEnumerable<string> Roles { get; set; }
-
+        
         public override string ToString() => $"Id [{ Id }] UserName [{ UserName}]";
     }
 }

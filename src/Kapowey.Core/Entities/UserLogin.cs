@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Identity;
 namespace Kapowey.Core.Entities
 {
     [Table("user_login")]
-    public partial class UserLogin : IdentityUserLogin<int>, IEntity<string>
+    public partial class UserLogin : IdentityUserLogin<int>, IEntity<int>
     {
         [NotMapped]
-        public string Id
+        public int Id
         {
-            get => LoginProvider;
-            set => LoginProvider = value;
+            get => UserId ?? 0;
+            set => UserId = value;
         } 
         
         [Key]

@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace Kapowey.Core.Persistance
 {
-    public partial class KapoweyContext : IdentityDbContext<User, UserRole, int, IdentityUserClaim<int>, UserUserRole, UserLogin, IdentityRoleClaim<int>, UserToken>
+    public partial class KapoweyContext : IdentityDbContext<User, UserRole, int, UserClaim, UserUserRole, UserLogin, UserRoleClaim, UserToken>
     {
         static KapoweyContext()
         {
@@ -41,10 +41,10 @@ namespace Kapowey.Core.Persistance
         public virtual DbSet<Series> Series { get; set; }
         public virtual DbSet<SeriesCategory> SeriesCategory { get; set; }
         public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<IdentityUserClaim<int>> UserClaim { get; set; }
+        public virtual DbSet<UserClaim> UserClaim { get; set; }
         public virtual DbSet<UserLogin> UserLogin { get; set; }
         public virtual DbSet<UserRole> UserRole { get; set; }
-        public virtual DbSet<IdentityRoleClaim<int>> UserRoleClaim { get; set; }
+        public virtual DbSet<UserRoleClaim> UserRoleClaim { get; set; }
         public virtual DbSet<UserToken> UserToken { get; set; }
         public virtual DbSet<UserUserRole> UserUserRole { get; set; }
 
@@ -56,7 +56,7 @@ namespace Kapowey.Core.Persistance
                 .HasPostgresEnum(null, "e_rating", new[] { "Not Specified", "Poor", "Fair", "Good", "Very Good", "Excellent" })
                 .HasPostgresEnum(null, "e_status", new[] { "New", "Imported", "Ok", "Edited", "Pending Review", "Under Review", "Locked", "Inactive" })
                 .HasPostgresExtension("uuid-ossp");
-
+            
             modelBuilder.Entity<ApiApplication>(entity =>
             {
                 entity.HasIndex(e => e.ApiKey)
@@ -711,7 +711,7 @@ namespace Kapowey.Core.Persistance
                     .HasConstraintName("user_modified_user_id_fkey");
 
                 // Each User can have many UserClaims
-                entity.HasMany<IdentityUserClaim<int>>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
+                entity.HasMany<UserClaim>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
 
                 // Each User can have many UserClaims
                 entity.HasMany(e => e.Claims)
@@ -730,24 +730,12 @@ namespace Kapowey.Core.Persistance
 
             });
 
-            modelBuilder.Entity<IdentityUserClaim<int>>(entity =>
-            {
-                entity.ToTable("user_claim");
-
-                entity.HasKey(x => x.Id);
-
-                entity.Property(x => x.Id).HasColumnName("user_claim_id");
-                entity.Property(x => x.UserId).HasColumnName("user_id");
-                entity.Property(x => x.ClaimType).HasColumnName("claim_type");
-                entity.Property(x => x.ClaimValue).HasColumnName("claim_value");
-                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
-            });
-
             modelBuilder.Entity<UserLogin>(entity =>
             {
-                entity.ToTable("user_login");                
+                entity.ToTable("user_login");
 
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.UserLogin)
                     .HasForeignKey(d => d.UserId)
@@ -762,7 +750,7 @@ namespace Kapowey.Core.Persistance
                 entity.Property(e => e.Id).HasColumnName("user_role_id");
 
                 entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
+                
                 // A concurrency token for use with the optimistic concurrency checking
                 entity.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
@@ -770,9 +758,9 @@ namespace Kapowey.Core.Persistance
                 entity.HasMany<UserUserRole>().WithOne().HasForeignKey(ur => ur.RoleId).IsRequired();
 
                 // Each Role can have many associated RoleClaims
-                entity.HasMany<IdentityRoleClaim<int>>().WithOne().HasForeignKey(rc => rc.RoleId).IsRequired();
+                entity.HasMany<UserRoleClaim>().WithOne().HasForeignKey(rc => rc.RoleId).IsRequired();
 
-                // Each User can have many UserClaims
+                // Each User Role can have many UserClaims
                 entity.HasMany(e => e.Claims)
                     .WithOne()
                     .HasForeignKey(uc => uc.RoleId)
@@ -780,16 +768,14 @@ namespace Kapowey.Core.Persistance
 
             });
 
-            modelBuilder.Entity<IdentityRoleClaim<int>>(entity =>
+            modelBuilder.Entity<UserRoleClaim>(entity =>
             {
                 entity.ToTable("user_role_claim");
 
-                entity.Property(x => x.Id).HasColumnName("user_role_claim_id");
+                entity.Property(x => x.Id).HasColumnName("user_role_claim_id").UseIdentityAlwaysColumn();
                 entity.Property(x => x.RoleId).HasColumnName("user_role_id");
                 entity.Property(x => x.ClaimType).HasColumnName("claim_type");
                 entity.Property(x => x.ClaimValue).HasColumnName("claim_value");
-                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
             });
 
             modelBuilder.Entity<UserToken>(entity =>
@@ -799,11 +785,31 @@ namespace Kapowey.Core.Persistance
                 entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name })
                     .HasName("pk_user_tokens");
 
+                entity.Property(e => e.UserId).HasColumnName("user_id");                
+                
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.UserToken)
                     .HasForeignKey(d => d.UserId)
                     .HasConstraintName("user_token_user_id_fkey");
             });
+            
+            modelBuilder.Entity<UserClaim>(entity =>
+            {
+                entity.ToTable("user_claim");
+
+                entity.HasKey(x => x.Id);
+                
+                entity.Property(x => x.Id).HasColumnName("user_claim_id").UseIdentityAlwaysColumn();
+                entity.Property(x => x.ClaimType).HasColumnName("claim_type");
+                entity.Property(x => x.ClaimValue).HasColumnName("claim_value");
+                
+                entity.Property(e => e.UserId).HasColumnName("user_id");                
+                
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Claims)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("user_claim_user_id_fkey");  
+            });            
 
             modelBuilder.Entity<UserUserRole>(entity =>
             {
@@ -825,6 +831,22 @@ namespace Kapowey.Core.Persistance
                     .HasForeignKey(d => d.RoleId)
                     .HasConstraintName("user_user_role_user_role_id_fkey");
             });
+            
+            modelBuilder.Entity<UserRoleClaim>(entity =>
+            {
+                entity.ToTable("user_role_claim");
+
+                entity.Property(x => x.Id).HasColumnName("user_role_claim_id").UseIdentityAlwaysColumn();
+                entity.Property(x => x.ClaimType).HasColumnName("claim_type");
+                entity.Property(x => x.ClaimValue).HasColumnName("claim_value");
+                
+                entity.Property(e => e.RoleId).HasColumnName("user_role_id");                
+                
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.Claims)
+                    .HasForeignKey(d => d.RoleId)
+                    .HasConstraintName("user_role_claim_user_role_id_fkey");  
+            });            
 
             OnModelCreatingPartial(modelBuilder);
         }

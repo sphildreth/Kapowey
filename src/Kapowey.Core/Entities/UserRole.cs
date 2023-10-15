@@ -27,7 +27,7 @@ namespace Kapowey.Core.Entities
         [Column("concurrency_stamp")]
         public override string? ConcurrencyStamp { get; set; }
 
-        public virtual ICollection<IdentityRoleClaim<int>> Claims { get; set; }
+        public virtual ICollection<UserRoleClaim> Claims { get; set; }
 
         [InverseProperty("UserRole")]
         public virtual ICollection<UserUserRole> UserUserRole { get; set; }
