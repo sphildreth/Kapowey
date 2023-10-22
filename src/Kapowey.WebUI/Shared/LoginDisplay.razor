@@ -6,6 +6,10 @@
 
 <AuthorizeView>
     <Authorized>
+        <MudIconButton Icon="@Icons.Material.Outlined.Notifications" />
+        <MudAvatar>
+            <MudImage Src="images/user.svg"></MudImage>
+        </MudAvatar>        
         <a href="Identity/Account/Manage">Hello, @context.User.Identity?.Name!</a>
         <form method="post" action="Identity/Account/Logout">
             <button type="submit" class="nav-link btn btn-link">Log out</button>

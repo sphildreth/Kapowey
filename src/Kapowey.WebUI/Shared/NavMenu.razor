@@ -1,12 +1,25 @@
+@using Kapowey.Core.Entities
+
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All"><img class="kp-icon" src="images\dashboard.svg" alt="Dashboard"> Dashboard</MudNavLink>
     <MudNavLink Href="/collections" Match="NavLinkMatch.Prefix"><img class="kp-icon" src="images\collection.svg" alt="Collections"> Collections</MudNavLink>
     <MudNavLink Href="/issues" Match="NavLinkMatch.Prefix"><img class="kp-icon" src="images\issue.svg" alt="Issues"> Issues</MudNavLink>
     <MudNavLink Href="/series" Match="NavLinkMatch.Prefix"><img class="kp-icon" src="images\series.svg" alt="Series"> Series</MudNavLink>
     <MudNavLink Href="/publishers" Match="NavLinkMatch.Prefix"><img class="kp-icon" src="images\publisher.svg" alt="Publishers"> Publishers</MudNavLink>
-    <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.ManageAccounts" Expanded="true">
-        <MudNavLink Href="/users">Users</MudNavLink>
-        <MudNavLink Href="/users">Roles</MudNavLink>
-    </MudNavGroup>    
+    <AuthorizeView Policy="@(Core.Common.Models.UserRoleRegistry.EditorRoleName)">
+        <MudNavGroup Title="Definitions" Icon="@Icons.Material.Filled.Dataset" Expanded="true">
+            <MudNavLink Href="/franchisecategories">Franchise Categories</MudNavLink>
+            <MudNavLink Href="/gradeterms">Grade Terms</MudNavLink>
+            <MudNavLink Href="/issueterms">Issue Types</MudNavLink>
+            <MudNavLink Href="/publishercategories">Publisher Categories</MudNavLink>
+            <MudNavLink Href="/seriescategories">Series Categories</MudNavLink>
+        </MudNavGroup>
+    </AuthorizeView>    
+    <AuthorizeView Policy="@(Core.Common.Models.UserRoleRegistry.AdminRoleName)">
+        <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.ManageAccounts" Expanded="true">
+            <MudNavLink Href="/userroles">Roles</MudNavLink>
+            <MudNavLink Href="/users">Users</MudNavLink>
+        </MudNavGroup>
+    </AuthorizeView>
 </MudNavMenu>
 
