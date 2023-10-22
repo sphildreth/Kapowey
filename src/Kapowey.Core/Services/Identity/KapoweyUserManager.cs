@@ -14,10 +14,4 @@ public class KapoweyUserManager : UserManager<User>
         : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
     {
     }
-
-    public override Task<IdentityResult> AddLoginAsync(User user, UserLoginInfo login)
-    {
-        return base.AddLoginAsync(user, login);
-    }
-    
 }

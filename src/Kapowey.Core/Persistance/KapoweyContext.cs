@@ -27,7 +27,9 @@ namespace Kapowey.Core.Persistance
 
         public virtual DbSet<ApiApplication> ApiApplication { get; set; }
         public virtual DbSet<Collection> Collection { get; set; }
+        
         public virtual DbSet<CollectionIssue> CollectionIssue { get; set; }
+        
         public virtual DbSet<CollectionIssueGradeTerm> CollectionIssueGradeTerm { get; set; }
         public virtual DbSet<Franchise> Franchise { get; set; }
         public virtual DbSet<FranchiseCategory> FranchiseCategory { get; set; }
@@ -40,13 +42,17 @@ namespace Kapowey.Core.Persistance
         public virtual DbSet<PublisherCategory> PublisherCategory { get; set; }
         public virtual DbSet<Series> Series { get; set; }
         public virtual DbSet<SeriesCategory> SeriesCategory { get; set; }
-        public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<UserClaim> UserClaim { get; set; }
-        public virtual DbSet<UserLogin> UserLogin { get; set; }
-        public virtual DbSet<UserRole> UserRole { get; set; }
-        public virtual DbSet<UserRoleClaim> UserRoleClaim { get; set; }
-        public virtual DbSet<UserToken> UserToken { get; set; }
-        public virtual DbSet<UserUserRole> UserUserRole { get; set; }
+        public new DbSet<User> Users { get; set; }
+        
+        public new DbSet<UserClaim> UserClaims { get; set; }
+        
+        public new DbSet<UserLogin> UserLogins { get; set; }
+        public new DbSet<UserRole> UserRoles { get; set; }
+        
+        public virtual DbSet<UserRoleClaim> UserRoleClaims { get; set; }
+        
+        public new DbSet<UserToken> UserTokens { get; set; }
+        public virtual DbSet<UserUserRole> UserUserRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -720,13 +726,13 @@ namespace Kapowey.Core.Persistance
                     .IsRequired();
 
                 //// Each User can have many UserLogins
-                //entity.HasMany<UserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
+                entity.HasMany<UserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
 
                 //// Each User can have many UserTokens
-                //entity.HasMany<UserToken>().WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
+                entity.HasMany<UserToken>().WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
 
                 //// Each User can have many entries in the UserRole join table
-                //entity.HasMany<UserUserRole>().WithOne().HasForeignKey(ur => ur.UserId).IsRequired();
+                entity.HasMany<UserUserRole>().WithOne().HasForeignKey(ur => ur.UserId).IsRequired();
 
             });
 

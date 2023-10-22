@@ -84,7 +84,7 @@ namespace Kapowey.Core.Services.Data
             {
                 return null;
             }
-            return DbContext.User
+            return DbContext.Users
                             .Where(x => x.NormalizedUserName == userName.ToUpper())
                             .Select(x => (int?)x.Id)
                             .FirstOrDefaultAsync();
@@ -96,7 +96,7 @@ namespace Kapowey.Core.Services.Data
             {
                 return null;
             }
-            return DbContext.User
+            return DbContext.Users
                 .Where(x => x.NormalizedEmail == email.ToUpper())
                 .Select(x => (int?)x.Id)
                 .FirstOrDefaultAsync();
@@ -104,7 +104,7 @@ namespace Kapowey.Core.Services.Data
 
         private Task<int?> GetUserIdForUserApiKeyAction(Guid apiKey)
         {
-            return DbContext.User
+            return DbContext.Users
                             .Where(x => x.ApiKey == apiKey)
                             .Select(x => (int?)x.Id)
                             .FirstOrDefaultAsync();
@@ -112,7 +112,7 @@ namespace Kapowey.Core.Services.Data
 
         private Task<User> GetUserByUserIdAction(int userId)
         {
-            return DbContext.User
+            return DbContext.Users
                             .Include(x => x.Claims)
                             .Include(x => x.UserUserRole).ThenInclude(x => x.UserRole).ThenInclude(x => x.Claims)
                             .FirstOrDefaultAsync(x => x.Id == userId);
@@ -251,7 +251,7 @@ namespace Kapowey.Core.Services.Data
             {
                 return new ServiceResponse<bool>(new ServiceResponseMessage($"Invalid ApiKey [{ apiKey }]", ServiceResponseMessageType.NotFound));
             }
-            DbContext.User.Remove(userToDelete);
+            DbContext.Users.Remove(userToDelete);
             await DbContext.SaveChangesAsync().ConfigureAwait(false);
             Logger.LogWarning($"User `{ user }` deleted: User `{ userToDelete }`.");
             return new ServiceResponse<bool>(true);
@@ -272,7 +272,7 @@ namespace Kapowey.Core.Services.Data
             {
                 return new PagedResponse<API.UserInfo>(new ServiceResponseMessage("Invalid Request", ServiceResponseMessageType.Error));
             }
-            return await CreatePagedResponse<User, API.UserInfo>(DbContext.User, request).ConfigureAwait(false);
+            return await CreatePagedResponse<User, API.UserInfo>(DbContext.Users, request).ConfigureAwait(false);
         }
 
         public async Task<IServiceResponse<bool>> ModifyAsync(User user, API.User modify)
@@ -401,48 +401,48 @@ namespace Kapowey.Core.Services.Data
                     return new ServiceResponse<int>(new ServiceResponseMessage("Password is not strong enough, try making it longer, adding numbers or special characters.", ServiceResponseMessageType.Validation));
                 }
                 newUser.PasswordHash = PasswordHasher.HashPassword(newUser, model.Password);
-                await DbContext.User.AddAsync(newUser).ConfigureAwait(false);
+                await DbContext.Users.AddAsync(newUser).ConfigureAwait(false);
                 await DbContext.SaveChangesAsync().ConfigureAwait(false);
                 var isFirstUser = (await DbContext.Users.CountAsync().ConfigureAwait(false) == 1);
                 if (isFirstUser) // First user to register
                 {
-                    var adminRole = await DbContext.UserRole.FirstOrDefaultAsync(x => x.Name == UserRoleRegistry.AdminRoleName).ConfigureAwait(false);
+                    var adminRole = await DbContext.UserRoles.FirstOrDefaultAsync(x => x.Name == UserRoleRegistry.AdminRoleName).ConfigureAwait(false);
                     if (adminRole == null)
                     {
                         // Create User Roles
-                        await DbContext.UserRole.AddAsync(new UserRole
+                        await DbContext.UserRoles.AddAsync(new UserRole
                         {
                             Name = UserRoleRegistry.AdminRoleName,
                             NormalizedName = UserRoleRegistry.AdminRoleName.ToUpper(),
                             ConcurrencyStamp = Guid.NewGuid().ToString()
                         }).ConfigureAwait(false);
-                        await DbContext.UserRole.AddAsync(new UserRole
+                        await DbContext.UserRoles.AddAsync(new UserRole
                         {
                             Name = UserRoleRegistry.ManagerRoleName,
                             NormalizedName = UserRoleRegistry.ManagerRoleName.ToUpper(),
                             ConcurrencyStamp = Guid.NewGuid().ToString()
                         }).ConfigureAwait(false);
-                        await DbContext.UserRole.AddAsync(new UserRole
+                        await DbContext.UserRoles.AddAsync(new UserRole
                         {
                             Name = UserRoleRegistry.EditorRoleName,
                             NormalizedName = UserRoleRegistry.EditorRoleName.ToUpper(),
                             ConcurrencyStamp = Guid.NewGuid().ToString()
                         }).ConfigureAwait(false);
-                        await DbContext.UserRole.AddAsync(new UserRole
+                        await DbContext.UserRoles.AddAsync(new UserRole
                         {
                             Name = UserRoleRegistry.ContributorRoleName,
                             NormalizedName = UserRoleRegistry.ContributorRoleName.ToUpper(),
                             ConcurrencyStamp = Guid.NewGuid().ToString()
                         }).ConfigureAwait(false);
                         await DbContext.SaveChangesAsync().ConfigureAwait(false);
-                        adminRole = await DbContext.UserRole.FirstOrDefaultAsync(x => x.Name == UserRoleRegistry.AdminRoleName).ConfigureAwait(false);
+                        adminRole = await DbContext.UserRoles.FirstOrDefaultAsync(x => x.Name == UserRoleRegistry.AdminRoleName).ConfigureAwait(false);
                     }
                     if (adminRole == null)
                     {
                         throw new Exception($"Unable to add initial user to { UserRoleRegistry.AdminRoleName } role");
                     }
                     // Add user as Admin
-                    await DbContext.UserUserRole.AddAsync(new UserUserRole
+                    await DbContext.UserUserRoles.AddAsync(new UserUserRole
                     {
                         UserId = newUser.Id,
                         RoleId = adminRole.Id

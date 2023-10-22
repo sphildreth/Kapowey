@@ -10,6 +10,8 @@ using Kapowey.Core.Services;
 using Kapowey.Core.Services.Data;
 using Kapowey.Core.Services.Identity;
 using Kapowey.WebUI.Areas.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -76,25 +78,60 @@ builder.Services.AddDbContext<KapoweyContext>(options =>
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging());
 
+builder.Services.AddDbContextFactory<KapoweyContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("KapoweyConnectionString"), o => o.UseNodaTime())
+        .EnableDetailedErrors()
+        .EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
+
 #region Security Related
+
+builder.Services.AddScoped<KapoweySignInManager>();
+builder.Services.AddScoped<KapoweyUserManager>();
+builder.Services.AddScoped<KapoweyUserStore>();
 
 builder.Services.AddIdentity<User, UserRole>()
     .AddRoles<UserRole>()
     .AddUserManager<KapoweyUserManager>()
+    .AddSignInManager<KapoweySignInManager>()
     .AddUserStore<KapoweyUserStore>()
     .AddEntityFrameworkStores<KapoweyContext>()
-    .AddDefaultUI()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication()
+builder.Services.AddAuthentication(o =>
+    {
+        o.DefaultScheme = IdentityConstants.ApplicationScheme;
+        o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddCookie()
     .AddGoogle(googleOptions =>
     {
         googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
         googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        googleOptions.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
     });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.Cookie.Name = "KapoweyAuth";
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.LoginPath = "/Identity/Account/Login";
+    options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+    options.SlidingExpiration = true;
+});
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    // This lambda determines whether user consent for non-essential 
+    // cookies is needed for a given request.
+    options.CheckConsentNeeded = context => true;
+    // requires using Microsoft.AspNetCore.Http;
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
+
 builder.Services.AddScoped<IPasswordHasher<User>, BCryptPasswordHasher<User>>();
-builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -109,6 +146,10 @@ builder.Services.AddAuthorization(options =>
             UserRoleRegistry.EditorRoleName, UserRoleRegistry.ManagerRoleName));
 });
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<HttpContextAccessor>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<HttpClient>();
+
 builder.Services.AddScoped<IKapoweyHttpContext>(factory =>
 {
     var actionContext = factory.GetService<IActionContextAccessor>().ActionContext;
@@ -121,7 +162,7 @@ builder.Services.AddScoped<IKapoweyHttpContext>(factory =>
 #region Services
 
 builder.Services.AddFluentEmail(smtpClientOptions.User)
-    .AddRazorRenderer(Path.Combine(Directory.GetCurrentDirectory(), "Resources", "EmailTemplates"))
+    .AddRazorRenderer("/home/steven/source/kapowey/src/Kapowey.Core/Templates/EmailTemplates") // TODO; should be more dynamic
     .AddMailKitSender(smtpClientOptions);
 builder.Services.AddScoped<IMailService, MailService>();
 builder.Services.AddScoped<IImageService, ImageService>();
@@ -159,11 +200,11 @@ app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 
 app.UseStaticFiles();
-
-app.UseRouting();
-
+app.UseCookiePolicy();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRouting();
 
 app.MapControllers();
 app.MapBlazorHub();

@@ -11,7 +11,7 @@ namespace Kapowey.Core.Entities
         [NotMapped]
         public int Id
         {
-            get => UserId ?? 0;
+            get => UserId;
             set => UserId = value;
         } 
         
@@ -29,7 +29,7 @@ namespace Kapowey.Core.Entities
         public override string? ProviderDisplayName { get; set; }
 
         [Column("user_id")]
-        public new int? UserId { get; set; }
+        public override int UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty("UserLogin")]

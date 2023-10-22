@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Kapowey.Core.Services.Identity;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
@@ -31,7 +32,7 @@ public class RevalidatingIdentityAuthenticationStateProvider<TUser>
         var scope = _scopeFactory.CreateScope();
         try
         {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<KapoweyUserManager>();
             return await ValidateSecurityStampAsync(userManager, authenticationState.User);
         }
         finally
@@ -47,7 +48,7 @@ public class RevalidatingIdentityAuthenticationStateProvider<TUser>
         }
     }
 
-    private async Task<bool> ValidateSecurityStampAsync(UserManager<TUser> userManager, ClaimsPrincipal principal)
+    private async Task<bool> ValidateSecurityStampAsync(KapoweyUserManager userManager, ClaimsPrincipal principal)
     {
         var user = await userManager.GetUserAsync(principal);
         if (user == null)
